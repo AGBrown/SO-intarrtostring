@@ -10,7 +10,7 @@ import com.google.caliper.*;
  * @author Andrew Brown
  */
 public class TextCaliper {    
-    @Param({"1", "100", "1000", "100000", "100000000"}) int N;
+    @Param({"1", "100", "1000", "10_000", "100000", "1000000", "10000000"}) int N;
     @Param({"text.SimpleConverter", "text.AltConverter"}) ConverterFactory sutFactory;
     
     private int[] array;

@@ -2,3 +2,4 @@
 *.png
 *.lst
 *.class
+/target/
