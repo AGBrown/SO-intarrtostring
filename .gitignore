@@ -3,3 +3,4 @@
 *.lst
 *.class
 /target/
+/src/main/java/org/openjdk/jmh/samples

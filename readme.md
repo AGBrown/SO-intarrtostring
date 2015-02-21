@@ -1,12 +1,28 @@
-#Caliper tests for `int[]` to `String` base-16 conversion in Java.
+#Microbenchmarks for `int[]` to `String` base-16 conversion in Java.
 
 From the SO question: [How to convert int array to hex string](http://stackoverflow.com/questions/28609364/how-to-convert-int-array-to-hex-string)
 
-This code uses [google caliper](https://code.google.com/p/caliper/) for microbenchmarking. 
+This code uses [JMH](http://openjdk.java.net/projects/code-tools/jmh/) for microbenchmarking. 
 
-Benchmark results are at:
+Sample benchmark results are:
 
- 1. [Result set 1](https://microbenchmarks.appspot.com/runs/be15aeb9-9c0e-4af9-8eea-6748462bb324#r:scenario.benchmarkSpec.parameters.sutFactory&c:scenario.benchmarkSpec.parameters.N) 
+<pre>
+>java -jar target/benchmarks.jar TextBench -wi 5 -i 10 -f 3
+</pre>
+
+| N          |    Alt / ns | error / ns | Simple / ns | Error / ns | Speed up |
+| ---------: |  ---------: | ---------: | ----------: | ---------: | -------: |
+| 1          |          30 |          1 |          61 |          2 |     2.0x |
+| 100        |         852 |         19 |       3,724 |         99 |     4.4x |
+| 1,000      |       7,517 |        200 |      36,484 |        879 |     4.9x |
+| 10,000     |      82,641 |      1,416 |     360,670 |      5,728 |     4.4x |
+| 100,000    |   1,014,612 |    241,089 |   4,006,940 |     91,870 |     3.9x |
+| 1,000,000  |   9,929,510 |    174,006 |  41,077,214 |  1,181,322 |     4.1x |
+| 10,000,000 | 182,698,229 | 16,571,654 | 432,730,259 | 13,310,797 |     2.4x |
+
+Note these speed-up factors are different to those originally published using Caliper. 
+
+*This has nothing to do with Caliper but rather as the original results were done with a test that did not put anything other than `0`s into the `int[]` test array. This resulted in JVM optimisations that gave artificially high performances. The above speed-up factors can be closely reproduced in Caliper.* 
 
 ##Project structure
 
@@ -15,39 +31,15 @@ This maven-based project contains the text package with 4 classes:
  - IntArrToStringConverter.java: A common interface to allow caliper based benchmarking comparing different approaches to base-16 text encoding for an `int[]`
  - SimpleConverter.java: The (corrected) encoder proposed by [Malt's answer](http://stackoverflow.com/a/28609627/1945631)
  - AltConverter.java: The alternative encoder proposed by [Andrew's answer](http://stackoverflow.com/a/28611711/1945631)
- - TextCaliper.java: The benchmark test file
+ - TextBench.java: The benchmark test file
 
-#Installing Caliper
+#Installing JMH
 
-This project does NOT use the maven dependency
-
-	<dependency>
-	  <groupId>com.google.caliper</groupId>
-	  <artifactId>caliper</artifactId>
-	  <version>1.0-beta-1</version>
-	</dependency>
-
-Instead:
-
- 1. Assuming maven [is installed](http://maven.apache.org/guides/getting-started/maven-in-five-minutes.html), clone caliper from `https://code.google.com/p/caliper/` as per the instructions at [google code > caliper > source](https://code.google.com/p/caliper/source/checkout).
- 1. This project was tested with caliper version 042fc58723819d7e8ca58fa91e86a363c9cf5a28
- 1. Open a console (windows: command prompt), cd into the caliper subdirectory inside the git repository that you just cloned
- 1. Run `mvn clean install` to build, run the tests and load caliper into your maven repositories.
+This is a maven project, so if it is set up correctly then `mvn clean install` should work.
 
 #Running the tests
 
-For an eclipse (tested in Luna) test:
+Use Eclipse to develop the code, but run the tests from the console:
 
- 1. Add a new "External Tools" configuration
- 1. Name: Caliper
- 1. Main > Location: `${system_path:java}`
- 1. Main > Working Directory: `${project_loc}`
- 1. Main > Arguments: `-cp "${project_classpath}" com.google.caliper.runner.CaliperMain ${java_type_name} --directory C:\Users\<UserName>\.caliper --run-name intArrToHex.Micro.001 -i runtime`
- 1. Open the TextCaliper.java file and run the tests (it is a good idea to do a dry-run first, see notes below)
-
-##Notes
-
-  - the `config.properties` file in `home/.caliper` (`C:\users\username\.caliper` in windows) can be updated to include an API key for the https://microbenchmarks.appspot.com results store. Log in to the results store and put the API key into a line `results.upload.options.key=<apikey>` in the `config.properties` file.
-  - the `--directory` argument needs to point to the caliper directory with the `config.properties` file. In windows this may need to be in DOS format (e.g. `C:\Users\ANDREW~1\.caliper`). Double quotes should be exluded.
-  - the `--run-name` can be exluded if not using an API key. It should be updated on each run if you are using an API key.
-  - Use the [caliper command line options](https://code.google.com/p/caliper/wiki/CommandLineOptions) reference to do things like a dry-run
+    mvn clean install
+    java -jar target/benchmarks.jar TextBench -wi 5 -i 10 -f 3
